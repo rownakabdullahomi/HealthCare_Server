@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
-import { userService } from "./user.service";
+
 import sendResponse from "../../shared/sendResponse";
+import { UserService } from "./user.service";
 
 const createPatient = catchAsync(async (req: Request, res: Response)=>{
-    const result = await userService.createPatient(req.body);
+    const result = await UserService.createPatient(req);
+    // console.log(req.body);
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -15,6 +17,6 @@ const createPatient = catchAsync(async (req: Request, res: Response)=>{
 
 
 
-export const userController = {
+export const UserController = {
     createPatient
 }

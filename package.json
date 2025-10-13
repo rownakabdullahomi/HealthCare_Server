@@ -1,5 +1,5 @@
 {
-  "name": "ph-health-care-starter",
+  "name": "ph-health-care-server",
   "version": "1.0.0",
   "main": "server.js",
   "author": "Rownak",
