@@ -5,6 +5,8 @@ import { UserController } from "./user.controller";
 
 const router = express.Router();
 
+router.get("/", UserController.getAllFromDB);
+
 router.post(
   "/create-patient",
   fileUploader.upload.single("file"),
