@@ -7,4 +7,4 @@ router.post(
   "/login", AuthController.login
 );
 
-export const authRoutes = router;
+export const AuthRoutes = router;
