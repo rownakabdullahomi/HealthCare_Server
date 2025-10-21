@@ -3,10 +3,10 @@ import catchAsync from "../../shared/catchAsync";
 import { ScheduleService } from "./schedule.service";
 import sendResponse from "../../shared/sendResponse";
 import pick from "../../helpers/pick";
+import { IJWTPayload } from "../../types/common";
 
 const insertIntoDb = catchAsync(async (req: Request, res: Response) => {
   const result = await ScheduleService.insertIntoDb(req.body);
-
 
   sendResponse(res, {
     statusCode: 201,
@@ -16,22 +16,29 @@ const insertIntoDb = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const schedulesForDoctor = catchAsync(async (req: Request, res: Response) => {
-   const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"])
-   const filters = pick(req.query, ["startDateTime", "endDateTime"])
- 
-  const result = await ScheduleService.schedulesForDoctor(filters, options);
+const schedulesForDoctor = catchAsync(
+  async (req: Request & { user?: IJWTPayload }, res: Response) => {
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+    const filters = pick(req.query, ["startDateTime", "endDateTime"]);
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: "Schedule fetched successfully",
-    meta: result.meta,
-    data: result.data,
-  });
-});
+    const user = req.user;
+
+    const result = await ScheduleService.schedulesForDoctor(
+      user as IJWTPayload,
+      filters,
+      options
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Schedule fetched successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
 const deleteScheduleFromDb = catchAsync(async (req: Request, res: Response) => {
-  
   const result = await ScheduleService.deleteScheduleFromDb(req.params.id);
 
   sendResponse(res, {
@@ -45,5 +52,5 @@ const deleteScheduleFromDb = catchAsync(async (req: Request, res: Response) => {
 export const ScheduleController = {
   insertIntoDb,
   schedulesForDoctor,
-  deleteScheduleFromDb
+  deleteScheduleFromDb,
 };

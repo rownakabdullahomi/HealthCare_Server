@@ -2,6 +2,7 @@ import { addHours, addMinutes, format } from "date-fns";
 import { prisma } from "../../shared/prisma";
 import { paginationHelper } from "../../helpers/paginationHelper";
 import { Prisma } from "@prisma/client";
+import { IJWTPayload } from "../../types/common";
 
 const insertIntoDb = async (payload: any) => {
   const { startTime, endTime, startDate, endDate } = payload;
@@ -61,7 +62,11 @@ const insertIntoDb = async (payload: any) => {
   return schedules;
 };
 
-const schedulesForDoctor = async (filters: any, options: any) => {
+const schedulesForDoctor = async (
+  user: IJWTPayload,
+  filters: any,
+  options: any
+) => {
   const { page, limit, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
 
@@ -92,8 +97,26 @@ const schedulesForDoctor = async (filters: any, options: any) => {
         }
       : {};
 
+  const doctorSchedules = await prisma.doctorSchedules.findMany({
+    where: {
+      doctor:{
+        email: user.email
+      }
+    },
+    select: {
+      scheduleId: true
+    }
+  })
+
+  const doctorScheduleIds = doctorSchedules.map(schedule => schedule.scheduleId)
+
   const result = await prisma.schedule.findMany({
-    where: whereConditions,
+    where: {
+      ...whereConditions,
+      id: {
+        notIn: doctorScheduleIds
+      }
+    },
     skip,
     take: limit,
     orderBy: {
@@ -102,29 +125,34 @@ const schedulesForDoctor = async (filters: any, options: any) => {
   });
 
   const total = await prisma.schedule.count({
-    where: whereConditions,
+    where: {
+      ...whereConditions,
+      id: {
+        notIn: doctorScheduleIds
+      }
+    },
   });
 
   return {
     meta: {
       page,
       limit,
-      total
+      total,
     },
-    data: result
-  }
+    data: result,
+  };
 };
 
-const deleteScheduleFromDb = async (id: string)=> {
+const deleteScheduleFromDb = async (id: string) => {
   return prisma.schedule.delete({
     where: {
-      id
-    }
-  })
-}
+      id,
+    },
+  });
+};
 
 export const ScheduleService = {
   insertIntoDb,
   schedulesForDoctor,
-  deleteScheduleFromDb
+  deleteScheduleFromDb,
 };
