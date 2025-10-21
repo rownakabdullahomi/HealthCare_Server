@@ -4,7 +4,7 @@ import httpStatus from "http-status"
 
 const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
 
-    let statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+    let statusCode: number = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
     let success = false;
     let message = err.message || "Something went wrong!";
     let error = err;
@@ -12,16 +12,35 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
     if(err instanceof Prisma.PrismaClientKnownRequestError){
         if(err.code === "P2002"){
             message = "Duplicate key error.",
-            error = err.meta
+            error = err.meta,
+            statusCode = httpStatus.CONFLICT
         }
         if(err.code === "P1000"){
             message = "Authentication failed.",
-            error = err.meta
+            error = err.meta,
+            statusCode = httpStatus.BAD_GATEWAY
         }
         if(err.code === "P2003"){
             message = "Foreign key constrain failed.",
-            error = err.meta
+            error = err.meta,
+            statusCode= httpStatus.BAD_REQUEST
         }
+    }
+
+    else if (err instanceof Prisma.PrismaClientValidationError){
+        message = "Validation Error",
+        error = err.message,
+        statusCode = httpStatus.BAD_REQUEST
+    }
+    else if (err instanceof Prisma.PrismaClientKnownRequestError){
+        message = "Unknown Error.",
+        error = err.message,
+        statusCode = httpStatus.BAD_REQUEST
+    }
+    else if (err instanceof Prisma.PrismaClientInitializationError){
+        message = "Failed to initialized.",
+        error = err.message,
+        statusCode = httpStatus.BAD_REQUEST
     }
 
     res.status(statusCode).json({
