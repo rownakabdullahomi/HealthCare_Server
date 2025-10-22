@@ -3,7 +3,9 @@ import { DoctorController } from "./doctor.controller";
 
 const router = express.Router();
 
-router.get("/", DoctorController.getAllFromDB)
+router.get("/", DoctorController.getAllFromDb)
+
+router.patch("/:id", DoctorController.updateIntoDb)
 
 
 export const DoctorRoutes = router;
