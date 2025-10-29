@@ -2,12 +2,13 @@ import { UserStatus } from "@prisma/client"
 import { prisma } from "../../shared/prisma"
 import bcrypt from "bcryptjs";
 import { Secret } from 'jsonwebtoken'
-import { jwtHelper } from "../../helper/jwtHelper";
-import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status"
 import config from "../../../config";
 import emailSender from "./emailSender";
 import { emit } from "process";
+import ApiError from "../../errors/apiError";
+import { jwtHelper } from "../../helpers/jwt";
+
 
 const login = async (payload: { email: string, password: string }) => {
     const user = await prisma.user.findUniqueOrThrow({
